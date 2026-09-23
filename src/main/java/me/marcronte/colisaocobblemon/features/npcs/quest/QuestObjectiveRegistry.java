@@ -86,7 +86,7 @@ public class QuestObjectiveRegistry {
                 PokedexManager dex = Cobblemon.INSTANCE.getPlayerDataManager().getPokedexData(player.getUUID());
                 SpeciesDexRecord record = dex.getSpeciesRecords().get(species.getResourceIdentifier());
 
-                return record != null && record.getKnowledge().name().equalsIgnoreCase("CAUGHT");
+                return record != null && record.getKnowledge().name().equalsIgnoreCase("OWNED");
             }
 
             @Override
@@ -105,7 +105,7 @@ public class QuestObjectiveRegistry {
                 PokedexManager dex = Cobblemon.INSTANCE.getPlayerDataManager().getPokedexData(player.getUUID());
                 int count = 0;
                 for (SpeciesDexRecord record : dex.getSpeciesRecords().values()) {
-                    if (record.getKnowledge().name().equalsIgnoreCase("CAUGHT")) count++;
+                    if (record.getKnowledge().name().equalsIgnoreCase("OWNED")) count++;
                 }
                 return count >= amount;
             }
@@ -118,7 +118,7 @@ public class QuestObjectiveRegistry {
                 PokedexManager dex = Cobblemon.INSTANCE.getPlayerDataManager().getPokedexData(player.getUUID());
                 int count = 0;
                 for (SpeciesDexRecord record : dex.getSpeciesRecords().values()) {
-                    if (record.getKnowledge().name().equalsIgnoreCase("CAUGHT")) count++;
+                    if (record.getKnowledge().name().equalsIgnoreCase("OWNED")) count++;
                 }
                 return "\n\n(Pokedex: " + count + " / " + amount + ")";
             }
@@ -136,7 +136,7 @@ public class QuestObjectiveRegistry {
                 for (Species s : PokemonSpecies.getImplemented()) {
                     if (s.getNationalPokedexNumber() >= start && s.getNationalPokedexNumber() <= end) {
                         SpeciesDexRecord record = dex.getSpeciesRecords().get(s.getResourceIdentifier());
-                        if (record == null || !record.getKnowledge().name().equalsIgnoreCase("CAUGHT")) return false;
+                        if (record == null || !record.getKnowledge().name().equalsIgnoreCase("OWNED")) return false;
                     }
                 }
                 return true;
@@ -159,7 +159,7 @@ public class QuestObjectiveRegistry {
                     if (s.getNationalPokedexNumber() >= start && s.getNationalPokedexNumber() <= end) {
                         total++;
                         SpeciesDexRecord record = dex.getSpeciesRecords().get(s.getResourceIdentifier());
-                        if (record != null && record.getKnowledge().name().equalsIgnoreCase("CAUGHT")) caught++;
+                        if (record != null && record.getKnowledge().name().equalsIgnoreCase("OWNED")) caught++;
                     }
                 }
                 return "\n\n(Gen Progresso: " + caught + " / " + total + ")";
@@ -214,7 +214,7 @@ public class QuestObjectiveRegistry {
                 for (Species s : PokemonSpecies.getImplemented()) {
                     SpeciesDexRecord record = dex.getSpeciesRecords().get(s.getResourceIdentifier());
 
-                    if (record != null && record.getKnowledge().name().equalsIgnoreCase("CAUGHT")) {
+                    if (record != null && record.getKnowledge().name().equalsIgnoreCase("OWNED")) {
                         boolean hasType = false;
                         for (com.cobblemon.mod.common.api.types.ElementalType type : s.getTypes()) {
                             if (type.getName().equalsIgnoreCase(target)) {
@@ -239,7 +239,7 @@ public class QuestObjectiveRegistry {
                 for (Species s : PokemonSpecies.getImplemented()) {
                     SpeciesDexRecord record = dex.getSpeciesRecords().get(s.getResourceIdentifier());
 
-                    if (record != null && record.getKnowledge().name().equalsIgnoreCase("CAUGHT")) {
+                    if (record != null && record.getKnowledge().name().equalsIgnoreCase("OWNED")) {
                         boolean hasType = false;
                         for (com.cobblemon.mod.common.api.types.ElementalType type : s.getTypes()) {
                             if (type.getName().equalsIgnoreCase(target)) {
