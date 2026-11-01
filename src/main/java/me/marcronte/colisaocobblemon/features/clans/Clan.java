@@ -236,7 +236,7 @@ public class Clan {
     }
 
     public void applyDecay() {
-        this.xp = Math.max(0, (this.xp - 200) / 4);
+        this.xp = Math.max(0, (this.xp - 200));
         this.resetWeeklyMissions();
     }
 

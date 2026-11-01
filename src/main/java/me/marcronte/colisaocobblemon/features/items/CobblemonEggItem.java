@@ -79,10 +79,36 @@ public class CobblemonEggItem extends Item {
 
         if (!speciesStr.isEmpty()) {
             StringBuilder dna = new StringBuilder("species=").append(speciesStr);
+
             if (!formStr.isEmpty() && !formStr.equalsIgnoreCase("normal")) {
-                dna.append(" form=").append(formStr);
+                String cleanForm = formStr.toLowerCase();
+                dna.append(" form=").append(cleanForm);
+
+                if (cleanForm.contains("hisui")) {
+                    dna.append(" hisuian");
+                } else if (cleanForm.contains("alola")) {
+                    dna.append(" alolan");
+                } else if (cleanForm.contains("galar")) {
+                    dna.append(" galarian");
+                } else if (cleanForm.contains("paldea")) {
+                    dna.append(" paldean");
+                }
             }
+
             pokemon = PokemonProperties.Companion.parse(dna.toString()).create();
+
+            if (!formStr.isEmpty() && !formStr.equalsIgnoreCase("normal")) {
+                String cleanForm = formStr.toLowerCase();
+                if (cleanForm.contains("hisui") && !pokemon.getAspects().contains("hisuian")) {
+                    pokemon.getAspects().add("hisuian");
+                } else if (cleanForm.contains("alola") && !pokemon.getAspects().contains("alolan")) {
+                    pokemon.getAspects().add("alolan");
+                } else if (cleanForm.contains("galar") && !pokemon.getAspects().contains("galarian")) {
+                    pokemon.getAspects().add("galarian");
+                } else if (cleanForm.contains("paldea") && !pokemon.getAspects().contains("paldean")) {
+                    pokemon.getAspects().add("paldean");
+                }
+            }
         } else {
             pokemon = new Pokemon();
         }

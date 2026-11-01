@@ -65,13 +65,13 @@ public class HarvesterBlockEntity extends PokemonWorkBlockEntity implements Worl
         if (!isValidPokemon(pokemon) || isInventoryFull()) return false;
 
         int radius = switch (power) {
-            case STRONG -> 4; // 9x9x9
-            case MEDIUM -> 3; // 7x7x7
-            case WEAK -> 2;   // 5x5x5
+            case STRONG -> 3; // 7x7x7
+            case MEDIUM -> 2; // 5x5x5
+            case WEAK -> 1;   // 3x3x3
         };
 
         for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
+            for (int y = -1; y <= 1; y++) {
                 for (int z = -radius; z <= radius; z++) {
                     BlockPos checkPos = pos.offset(x, y, z);
                     BlockState state = level.getBlockState(checkPos);

@@ -12,10 +12,7 @@ import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.api.pokemon.egg.EggGroup;
 import com.cobblemon.mod.common.api.pokemon.evolution.Evolution;
 import com.cobblemon.mod.common.api.pokemon.stats.Stats;
-import com.cobblemon.mod.common.pokemon.Gender;
-import com.cobblemon.mod.common.pokemon.IVs;
-import com.cobblemon.mod.common.pokemon.Pokemon;
-import com.cobblemon.mod.common.pokemon.Species;
+import com.cobblemon.mod.common.pokemon.*;
 import me.marcronte.colisaocobblemon.ModItems;
 import me.marcronte.colisaocobblemon.config.GeneralConfig;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -58,11 +55,28 @@ public class BreedingCalculator {
 
         List<String> startingMoves = calculateInheritedMoves(childSpecies, mother, father);
 
-        StringBuilder dna = new StringBuilder(childSpecies.getName().toLowerCase());
+        boolean motherEverstone = isHoldingItem(mother, "cobblemon:everstone");
+        boolean fatherEverstone = isHoldingItem(father, "cobblemon:everstone");
 
-        String formName = mother.getForm().getName();
-        if (formName != null && !formName.isEmpty() && !formName.equalsIgnoreCase("normal")) {
-            dna.append(" form=").append(formName);
+        FormData inheritedForm = null;
+        String regionalAspect = null;
+
+        if (motherEverstone && isRegionalForm(mother.getForm().getName())) {
+            inheritedForm = mother.getForm();
+            regionalAspect = getDormantGene(mother.getForm().getName());
+        } else if (fatherEverstone && isRegionalForm(father.getForm().getName())) {
+            inheritedForm = father.getForm();
+            regionalAspect = getDormantGene(father.getForm().getName());
+        } else if (!isRegionalForm(mother.getForm().getName()) && !mother.getForm().getName().equalsIgnoreCase("normal")) {
+            inheritedForm = mother.getForm();
+        }
+
+        StringBuilder dna = new StringBuilder(childSpecies.resourceIdentifier.getPath());
+
+        if (regionalAspect != null) {
+            dna.append(" ").append(regionalAspect);
+        } else if (inheritedForm != null && !inheritedForm.getName().equalsIgnoreCase("normal")) {
+            dna.append(" form=").append(inheritedForm.getName().toLowerCase());
         }
 
         dna.append(" level=1");
@@ -71,6 +85,28 @@ public class BreedingCalculator {
         }
 
         Pokemon offspring = PokemonProperties.Companion.parse(dna.toString()).create();
+
+        if (regionalAspect != null) {
+            if (!offspring.getAspects().contains(regionalAspect)) {
+                offspring.getAspects().add(regionalAspect);
+            }
+            String shortFormName = inheritedForm.getName().toLowerCase();
+            if (!offspring.getAspects().contains(shortFormName)) {
+                offspring.getAspects().add(shortFormName);
+            }
+        }
+
+        for (String aspect : mother.getAspects()) {
+            String asp = aspect.toLowerCase();
+            if (asp.equals("normal") ||
+                    asp.matches("^(male|female|genderless|shiny|pokerus|fainted|alpha)$") ||
+                    isRegionalForm(asp)) {
+                continue;
+            }
+            if (!offspring.getAspects().contains(asp)) {
+                offspring.getAspects().add(asp);
+            }
+        }
 
         inheritNature(offspring, mother, father);
         inheritAbility(offspring, mother, father);
@@ -93,7 +129,6 @@ public class BreedingCalculator {
         boolean bIsDitto = b.getSpecies().getName().equalsIgnoreCase("ditto");
 
         if (aIsDitto && bIsDitto) return false;
-
         if (aIsDitto || bIsDitto) return true;
 
         if (a.getGender() == Gender.GENDERLESS || b.getGender() == Gender.GENDERLESS) return false;
@@ -197,7 +232,6 @@ public class BreedingCalculator {
         }
 
         AbilityTemplate sourceTemplate = sourceParent.getAbility().getTemplate();
-
         AbilityPool pool = child.getForm().getAbilities();
 
         List<PotentialAbility> allPotentials = new ArrayList<>();
@@ -217,7 +251,6 @@ public class BreedingCalculator {
         Random rand = new Random();
 
         boolean sourceHasHidden = hiddenInChild != null && hiddenInChild.getTemplate().equals(sourceTemplate);
-
         boolean sourceHasNormal = normalAbilities.contains(sourceTemplate);
 
         boolean passAbility = rand.nextInt(100) < 60;
@@ -402,9 +435,7 @@ public class BreedingCalculator {
 
     private static void rollShiny(Pokemon child, Pokemon mother, Pokemon father) {
         Random rand = new Random();
-
         int chance = 4096;
-
         child.setShiny(rand.nextInt(chance) == 0);
     }
 
@@ -418,5 +449,20 @@ public class BreedingCalculator {
         if (dex <= 809) return 7;
         if (dex <= 905) return 8;
         return 9;
+    }
+
+    private static boolean isRegionalForm(String formName) {
+        if (formName == null) return false;
+        String s = formName.toLowerCase();
+        return s.contains("hisui") || s.contains("alola") || s.contains("galar") || s.contains("paldea");
+    }
+
+    private static String getDormantGene(String formName) {
+        String s = formName.toLowerCase();
+        if (s.contains("hisui")) return "hisuian";
+        if (s.contains("alola")) return "alolan";
+        if (s.contains("galar")) return "galarian";
+        if (s.contains("paldea")) return "paldean";
+        return s;
     }
 }

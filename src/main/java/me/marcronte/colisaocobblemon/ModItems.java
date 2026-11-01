@@ -119,7 +119,9 @@ public class ModItems {
             new HoeItem(EternatiteTier.INSTANCE, new Item.Properties()
                     .attributes(HoeItem.createAttributes(EternatiteTier.INSTANCE, -4.0f, 0.0f))));
 
-    public static final Item BERRY_CRUSHER = registerItem("berry_crusher", new BerryCrusherItem(new Item.Properties().durability(100)));
+    public static final Item BERRY_CRUSHER = registerItem("berry_crusher",
+            new BerryCrusherItem(new Item.Properties())
+    );
     public static final Item POKE_LENS = registerItem("poke_lens", new PokeLens(new Item.Properties().stacksTo(1)));
 
 
