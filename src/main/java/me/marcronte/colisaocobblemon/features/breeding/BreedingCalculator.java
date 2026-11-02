@@ -71,6 +71,15 @@ public class BreedingCalculator {
             inheritedForm = mother.getForm();
         }
 
+        String motherSpeciesName = mother.getSpecies().getName().toLowerCase();
+        if (motherSpeciesName.equals("sneasler") || motherSpeciesName.equals("overqwil")) {
+            regionalAspect = "hisuian";
+        } else if (motherSpeciesName.equals("perrserker") || motherSpeciesName.equals("sirfetchd") || motherSpeciesName.equals("mrrime") || motherSpeciesName.equals("runerigus")) {
+            regionalAspect = "galarian";
+        } else if (motherSpeciesName.equals("clodsire")) {
+            regionalAspect = "paldean";
+        }
+
         StringBuilder dna = new StringBuilder(childSpecies.resourceIdentifier.getPath());
 
         if (regionalAspect != null) {
@@ -90,9 +99,11 @@ public class BreedingCalculator {
             if (!offspring.getAspects().contains(regionalAspect)) {
                 offspring.getAspects().add(regionalAspect);
             }
-            String shortFormName = inheritedForm.getName().toLowerCase();
-            if (!offspring.getAspects().contains(shortFormName)) {
-                offspring.getAspects().add(shortFormName);
+            if (inheritedForm != null) {
+                String shortFormName = inheritedForm.getName().toLowerCase();
+                if (!offspring.getAspects().contains(shortFormName)) {
+                    offspring.getAspects().add(shortFormName);
+                }
             }
         }
 
@@ -120,6 +131,10 @@ public class BreedingCalculator {
     }
 
     private static boolean canBreed(Pokemon a, Pokemon b) {
+        if (a.getPersistentData().getBoolean("castrado") || b.getPersistentData().getBoolean("castrado")) {
+            return false;
+        }
+
         if (a.getForm().getEggGroups().contains(EggGroup.UNDISCOVERED) ||
                 b.getForm().getEggGroups().contains(EggGroup.UNDISCOVERED)) {
             return false;

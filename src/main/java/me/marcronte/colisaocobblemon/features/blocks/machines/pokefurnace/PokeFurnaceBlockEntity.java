@@ -48,8 +48,8 @@ public class PokeFurnaceBlockEntity extends PokemonWorkBlockEntity implements Wo
     @Override
     protected int calculateWorkTime(WorkPower power) {
         return switch (power) {
-            case STRONG -> 200 / 3;
-            case MEDIUM -> 200 / 2;
+            case STRONG -> 200 / 6;
+            case MEDIUM -> 200 / 3;
             case WEAK -> 200;
         };
     }
@@ -104,9 +104,14 @@ public class PokeFurnaceBlockEntity extends PokemonWorkBlockEntity implements Wo
         smeltProgress++;
 
         if (smeltProgress >= smeltTotalTime) {
-            ItemStack resultStack = recipeHolder.value().getResultItem(level.registryAccess()).copy();
+            ItemStack baseResult = recipeHolder.value().getResultItem(level.registryAccess());
 
-            insertIntoOutput(resultStack);
+            int multiplier = getOreDuplicationMultiplier(serverLevel, power, baseResult);
+
+            ItemStack finalResult = baseResult.copy();
+            finalResult.setCount(baseResult.getCount() * multiplier);
+
+            insertIntoOutput(finalResult);
 
             inputStack.shrink(1);
             if (inputStack.isEmpty()) {
@@ -160,6 +165,28 @@ public class PokeFurnaceBlockEntity extends PokemonWorkBlockEntity implements Wo
                 this.setChanged();
             }
         }
+    }
+
+    private int getOreDuplicationMultiplier(ServerLevel level, WorkPower power, ItemStack resultStack) {
+        boolean isOreProduct = resultStack.is(net.minecraft.world.item.Items.IRON_INGOT) ||
+                resultStack.is(net.minecraft.world.item.Items.GOLD_INGOT) ||
+                resultStack.is(net.minecraft.world.item.Items.COPPER_INGOT) ||
+                resultStack.is(net.minecraft.world.item.Items.DIAMOND) ||
+                resultStack.is(net.minecraft.world.item.Items.EMERALD) ||
+                resultStack.is(net.minecraft.world.item.Items.LAPIS_LAZULI) ||
+                resultStack.is(net.minecraft.world.item.Items.REDSTONE) ||
+                resultStack.is(net.minecraft.world.item.Items.COAL) ||
+                resultStack.is(net.minecraft.world.item.Items.NETHERITE_SCRAP) ||
+                resultStack.is(net.minecraft.world.item.Items.QUARTZ) ||
+                resultStack.is(me.marcronte.colisaocobblemon.ModItems.ETERNATITE_SCRAP);
+
+        if (!isOreProduct) return 1;
+
+        return switch (power) {
+            case STRONG -> 2; // 100% chance
+            case MEDIUM -> level.random.nextFloat() < 0.40f ? 2 : 1; // 40% chance
+            case WEAK -> level.random.nextFloat() < 0.10f ? 2 : 1; // 10% chance
+        };
     }
 
     private void updateLitState(Level level, BlockPos pos, boolean lit) {

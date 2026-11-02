@@ -30,13 +30,13 @@ public class StylistManager {
         ProfessionPlayerData.PlayerProf prof = data.getPlayer(player.getUUID());
         String currentRank = prof.rank.toLowerCase();
 
-        Map<String, Object> estilistaData = ProfessionsPerksConfig.INSTANCE.perks.get("estilista");
-        if (estilistaData == null) return;
+        Map<String, Object> stylistData = ProfessionsPerksConfig.INSTANCE.perks.get("estilista");
+        if (stylistData == null) return;
 
         List<Map<String, Object>> validRecipes = new ArrayList<>();
 
         for (String rankLevel : RANK_ORDER) {
-            Object rankObj = estilistaData.get(rankLevel);
+            Object rankObj = stylistData.get(rankLevel);
             if (rankObj instanceof Map<?, ?> rankMap) {
                 Object categoriesObj = rankMap.get("categories");
                 if (categoriesObj instanceof Map<?, ?> categoriesMap) {
@@ -80,12 +80,12 @@ public class StylistManager {
         ProfessionPlayerData.PlayerProf prof = data.getPlayer(player.getUUID());
         String currentRank = prof.rank.toLowerCase();
 
-        Map<String, Object> estilistaData = ProfessionsPerksConfig.INSTANCE.perks.get("estilista");
-        if (estilistaData == null) return;
+        Map<String, Object> stylistData = ProfessionsPerksConfig.INSTANCE.perks.get("estilista");
+        if (stylistData == null) return;
 
         List<Map<String, Object>> validRecipes = new ArrayList<>();
         for (String rankLevel : RANK_ORDER) {
-            Object rankObj = estilistaData.get(rankLevel);
+            Object rankObj = stylistData.get(rankLevel);
             if (rankObj instanceof Map<?, ?> rankMap) {
                 Object categoriesObj = rankMap.get("categories");
                 if (categoriesObj instanceof Map<?, ?> categoriesMap) {
@@ -145,6 +145,8 @@ public class StylistManager {
             Item itemToRemove = BuiltInRegistries.ITEM.get(ResourceLocation.parse(parts[1].trim()));
             removeItems(player, itemToRemove, amountToRemove);
         }
+
+        pokemon.getPersistentData().putString("custom_stylist_skin", aspect);
 
         try {
             pokemon.getAspects().add(aspect);

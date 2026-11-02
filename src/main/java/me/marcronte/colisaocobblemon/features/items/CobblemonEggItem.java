@@ -56,13 +56,31 @@ public class CobblemonEggItem extends Item {
 
         if (delta >= blocksPerStep) {
             int stepsToTake = (int) (delta / blocksPerStep);
-
             float consumedDist = stepsToTake * blocksPerStep;
 
             int remaining = tag.getInt("RemainingSteps");
 
             if (remaining > 0) {
-                tag.putInt("RemainingSteps", Math.max(0, remaining - stepsToTake));
+                int stepMultiplier = 1;
+                var party = Cobblemon.INSTANCE.getStorage().getParty(player);
+
+                for (int i = 0; i < party.size(); i++) {
+                    Pokemon p = party.get(i);
+                    if (p != null && p.getAbility() != null) {
+                        String abilityName = p.getAbility().getName().toLowerCase().replace("_", "").replace(" ", "");
+
+                        if (abilityName.equals("flamebody") ||
+                                abilityName.equals("magmaarmor") ||
+                                abilityName.equals("steamengine")) {
+                            stepMultiplier = 2;
+                            break;
+                        }
+                    }
+                }
+
+                int effectiveSteps = stepsToTake * stepMultiplier;
+
+                tag.putInt("RemainingSteps", Math.max(0, remaining - effectiveSteps));
                 tag.putFloat("LastKnownWalkDist", lastDist + consumedDist);
 
                 CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);

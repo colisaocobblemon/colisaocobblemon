@@ -47,7 +47,7 @@ public class PokeLurerBlockEntity extends BlockEntity implements WorldlyContaine
 
                 if (lureType != null) {
                     this.currentLureType = lureType;
-                    this.fuelTicks = 6000; // 5 Minutes
+                    this.fuelTicks = 3000; // 2.5 Minutes
                     slotItem.shrink(1);
                     this.setChanged();
                 }
@@ -56,7 +56,7 @@ public class PokeLurerBlockEntity extends BlockEntity implements WorldlyContaine
         else {
             fuelTicks--;
 
-            if (fuelTicks % 200 == 0) {
+            if (fuelTicks % 400 == 0) { // 1 Pokemon / 20 seconds
                 spawnPokemonInArea(level, pos, currentLureType);
             }
 

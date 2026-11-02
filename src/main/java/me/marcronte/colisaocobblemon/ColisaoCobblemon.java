@@ -1,6 +1,10 @@
 package me.marcronte.colisaocobblemon;
 
+import com.cobblemon.mod.common.Cobblemon;
+import com.cobblemon.mod.common.api.Priority;
+import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.entity.npc.NPCEntity;
+import com.cobblemon.mod.common.pokemon.Pokemon;
 import me.marcronte.colisaocobblemon.commands.*;
 import me.marcronte.colisaocobblemon.features.RideRequirement;
 import me.marcronte.colisaocobblemon.features.blocks.LureRarityManager;
@@ -37,6 +41,7 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -114,6 +119,7 @@ public class ColisaoCobblemon implements ModInitializer {
             StylistCommand.register(dispatcher);
             BadgeCommand.register(dispatcher);
             EndBattleCommand.register(dispatcher);
+            CastrateCommand.register(dispatcher);
         });
 
         ClanCommands.register();
@@ -170,6 +176,32 @@ public class ColisaoCobblemon implements ModInitializer {
                     )
             );
         }
+
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            var party = Cobblemon.INSTANCE.getStorage().getParty(handler.player);
+            if (party != null) {
+                for (int i = 0; i < party.size(); i++) {
+                    Pokemon pokemon = party.get(i);
+                    if (pokemon != null && pokemon.getPersistentData().contains("custom_stylist_skin")) {
+                        String skinAspect = pokemon.getPersistentData().getString("custom_stylist_skin");
+                        if (!pokemon.getAspects().contains(skinAspect)) {
+                            pokemon.getAspects().add(skinAspect);
+                        }
+                    }
+                }
+            }
+        });
+
+        CobblemonEvents.POKEMON_ENTITY_SPAWN.subscribe(Priority.NORMAL, event -> {
+            Pokemon pokemon = event.getEntity().getPokemon();
+            if (pokemon.getPersistentData().contains("custom_stylist_skin")) {
+                String skinAspect = pokemon.getPersistentData().getString("custom_stylist_skin");
+                if (!pokemon.getAspects().contains(skinAspect)) {
+                    pokemon.getAspects().add(skinAspect);
+                }
+            }
+            return null;
+        });
 
         ModPlaceholders.register();
 

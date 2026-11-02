@@ -125,7 +125,12 @@ public class ClanPerkHandler {
     }
 
     private static void spawnExtraLoot(ServerLevel level, Pokemon pokemon, ServerPlayer player) {
-        ResourceLocation lootLocation = ResourceLocation.parse("cobblemon:entities/pokemon/" + pokemon.getSpecies().getName().toLowerCase());
+        String pokemonName = pokemon.getSpecies().getName().toLowerCase()
+                .replace(" ", "_")
+                .replace("-", "_")
+                .replace("'", "");
+
+        ResourceLocation lootLocation = ResourceLocation.parse("cobblemon:entities/pokemon/" + pokemonName);
         ResourceKey<LootTable> lootKey = ResourceKey.create(Registries.LOOT_TABLE, lootLocation);
 
         LootTable lootTable = level.getServer().reloadableRegistries().getLootTable(lootKey);

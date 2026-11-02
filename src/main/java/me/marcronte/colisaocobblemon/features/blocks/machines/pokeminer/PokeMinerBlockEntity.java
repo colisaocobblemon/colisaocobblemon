@@ -72,9 +72,9 @@ public class PokeMinerBlockEntity extends PokemonWorkBlockEntity implements Worl
 
         productionCounter++;
         int requiredItemsToConsume = switch (power) {
-            case STRONG -> 5; // 1 friendship / 5 item
-            case MEDIUM -> 3; // 1 friendship / 3 item
-            case WEAK -> 1;  // 1 friendship / 1 item
+            case STRONG -> 10; // 1 friendship / 10 item
+            case MEDIUM -> 6; // 1 friendship / 6 item
+            case WEAK -> 2;  // 1 friendship / 2 item
         };
 
         if (productionCounter >= requiredItemsToConsume) {
@@ -91,11 +91,11 @@ public class PokeMinerBlockEntity extends PokemonWorkBlockEntity implements Worl
         List<WeightedItem> pool = switch (power) {
             case STRONG -> List.of(
                     new WeightedItem(new ItemStack(Items.OBSIDIAN, 1), 35),
-                    new WeightedItem(new ItemStack(Items.RAW_GOLD, 1), 20),
-                    new WeightedItem(new ItemStack(Items.DIAMOND, 1), 5),
-                    new WeightedItem(new ItemStack(Items.EMERALD, 1), 4),
-                    new WeightedItem(new ItemStack(Items.AMETHYST_SHARD, 1), 40),
-                    new WeightedItem(new ItemStack(Items.ECHO_SHARD, 1), 7),
+                    new WeightedItem(new ItemStack(Items.RAW_GOLD, 1), 25), // Buff: 20 -> 25
+                    new WeightedItem(new ItemStack(Items.DIAMOND, 1), 7),   // Buff: 5 -> 7
+                    new WeightedItem(new ItemStack(Items.EMERALD, 1), 6),   // Buff: 4 -> 6
+                    new WeightedItem(new ItemStack(Items.AMETHYST_SHARD, 1), 45), // Buff: 40 -> 45
+                    new WeightedItem(new ItemStack(Items.ECHO_SHARD, 1), 8),  // Buff: 7 -> 8
                     new WeightedItem(new ItemStack(CobblemonItems.COVER_FOSSIL, 1), 1),
                     new WeightedItem(new ItemStack(CobblemonItems.CLAW_FOSSIL, 1), 1),
                     new WeightedItem(new ItemStack(CobblemonItems.ARMOR_FOSSIL, 1), 1),
@@ -111,45 +111,45 @@ public class PokeMinerBlockEntity extends PokemonWorkBlockEntity implements Worl
                     new WeightedItem(new ItemStack(CobblemonItems.ROOT_FOSSIL, 1), 1),
                     new WeightedItem(new ItemStack(CobblemonItems.SAIL_FOSSIL, 1), 1),
                     new WeightedItem(new ItemStack(CobblemonItems.SKULL_FOSSIL, 1), 1),
-                    new WeightedItem(new ItemStack(Items.COBBLESTONE, 1), 35),
-                    new WeightedItem(new ItemStack(Items.GRAVEL, 1), 25),
-                    new WeightedItem(new ItemStack(Items.DIRT, 1), 25),
-                    new WeightedItem(new ItemStack(Items.COAL, 1), 23),
-                    new WeightedItem(new ItemStack(Items.RAW_COPPER, 1), 15),
-                    new WeightedItem(new ItemStack(Items.RAW_IRON, 1), 25),
+                    new WeightedItem(new ItemStack(Items.COBBLESTONE, 1), 30), // Nerf: 35 -> 30
+                    new WeightedItem(new ItemStack(Items.GRAVEL, 1), 20),      // Nerf: 25 -> 20
+                    new WeightedItem(new ItemStack(Items.DIRT, 1), 20),        // Nerf: 25 -> 20
+                    new WeightedItem(new ItemStack(Items.COAL, 1), 25),        // Buff: 23 -> 25
+                    new WeightedItem(new ItemStack(Items.RAW_COPPER, 1), 18),  // Buff: 15 -> 18
+                    new WeightedItem(new ItemStack(Items.RAW_IRON, 1), 28),    // Buff: 25 -> 28
                     new WeightedItem(new ItemStack(Items.FLINT, 1), 8),
-                    new WeightedItem(new ItemStack(CobblemonItems.WATER_GEM, 1), 2),
-                    new WeightedItem(new ItemStack(CobblemonItems.FIRE_GEM, 1), 2),
-                    new WeightedItem(new ItemStack(CobblemonItems.DARK_GEM, 1), 2),
-                    new WeightedItem(new ItemStack(CobblemonItems.GHOST_GEM, 1), 2),
-                    new WeightedItem(new ItemStack(CobblemonItems.STEEL_GEM, 1), 2),
-                    new WeightedItem(new ItemStack(CobblemonItems.GROUND_GEM, 1), 2),
-                    new WeightedItem(new ItemStack(CobblemonItems.DRAGON_GEM, 1), 1),
-                    new WeightedItem(new ItemStack(CobblemonItems.POISON_GEM, 1), 2),
-                    new WeightedItem(new ItemStack(ModItems.ETERNATITE_ORE_ITEM, 1), 1)
+                    new WeightedItem(new ItemStack(CobblemonItems.WATER_GEM, 1), 3), // Buff: 2 -> 3
+                    new WeightedItem(new ItemStack(CobblemonItems.FIRE_GEM, 1), 3),  // Buff: 2 -> 3
+                    new WeightedItem(new ItemStack(CobblemonItems.DARK_GEM, 1), 3),  // Buff: 2 -> 3
+                    new WeightedItem(new ItemStack(CobblemonItems.GHOST_GEM, 1), 3), // Buff: 2 -> 3
+                    new WeightedItem(new ItemStack(CobblemonItems.STEEL_GEM, 1), 3), // Buff: 2 -> 3
+                    new WeightedItem(new ItemStack(CobblemonItems.GROUND_GEM, 1), 3),// Buff: 2 -> 3
+                    new WeightedItem(new ItemStack(CobblemonItems.DRAGON_GEM, 1), 2),// Buff: 1 -> 2
+                    new WeightedItem(new ItemStack(CobblemonItems.POISON_GEM, 1), 3),// Buff: 2 -> 3
+                    new WeightedItem(new ItemStack(ModItems.ETERNATITE_ORE_ITEM, 1), 2) // Buff: 1 -> 2
             );
             case MEDIUM -> List.of(
-                    new WeightedItem(new ItemStack(Items.DEEPSLATE, 1), 45),
-                    new WeightedItem(new ItemStack(Items.RAW_IRON, 1), 20),
-                    new WeightedItem(new ItemStack(Items.COAL, 1), 12),
-                    new WeightedItem(new ItemStack(Items.REDSTONE, 1), 9),
-                    new WeightedItem(new ItemStack(Items.LAPIS_LAZULI, 1), 8),
-                    new WeightedItem(new ItemStack(Items.RAW_GOLD, 1), 5),
-                    new WeightedItem(new ItemStack(Items.DIAMOND, 1), 1),
-                    new WeightedItem(new ItemStack(Items.COBBLESTONE, 1), 55),
+                    new WeightedItem(new ItemStack(Items.DEEPSLATE, 1), 40),   // Nerf: 45 -> 40
+                    new WeightedItem(new ItemStack(Items.RAW_IRON, 1), 25),    // Buff: 20 -> 25
+                    new WeightedItem(new ItemStack(Items.COAL, 1), 16),        // Buff: 12 -> 16
+                    new WeightedItem(new ItemStack(Items.REDSTONE, 1), 12),    // Buff: 9 -> 12
+                    new WeightedItem(new ItemStack(Items.LAPIS_LAZULI, 1), 10),// Buff: 8 -> 10
+                    new WeightedItem(new ItemStack(Items.RAW_GOLD, 1), 7),     // Buff: 5 -> 7
+                    new WeightedItem(new ItemStack(Items.DIAMOND, 1), 2),      // Buff: 1 -> 2
+                    new WeightedItem(new ItemStack(Items.COBBLESTONE, 1), 48), // Nerf: 55 -> 48
                     new WeightedItem(new ItemStack(Items.GRAVEL, 1), 8),
                     new WeightedItem(new ItemStack(Items.DIRT, 1), 7),
-                    new WeightedItem(new ItemStack(Items.RAW_COPPER, 1), 10),
+                    new WeightedItem(new ItemStack(Items.RAW_COPPER, 1), 12),  // Buff: 10 -> 12
                     new WeightedItem(new ItemStack(Items.FLINT, 1), 12)
             );
 
             case WEAK -> List.of(
-                    new WeightedItem(new ItemStack(Items.COBBLESTONE, 1), 55),
+                    new WeightedItem(new ItemStack(Items.COBBLESTONE, 1), 45), // Nerf: 55 -> 45
                     new WeightedItem(new ItemStack(Items.GRAVEL, 1), 8),
                     new WeightedItem(new ItemStack(Items.DIRT, 1), 7),
-                    new WeightedItem(new ItemStack(Items.COAL, 1), 15),
-                    new WeightedItem(new ItemStack(Items.RAW_COPPER, 1), 10),
-                    new WeightedItem(new ItemStack(Items.RAW_IRON, 1), 4),
+                    new WeightedItem(new ItemStack(Items.COAL, 1), 18),        // Buff: 15 -> 18
+                    new WeightedItem(new ItemStack(Items.RAW_COPPER, 1), 13),  // Buff: 10 -> 13
+                    new WeightedItem(new ItemStack(Items.RAW_IRON, 1), 7),     // Buff: 4 -> 7
                     new WeightedItem(new ItemStack(Items.FLINT, 1), 1)
             );
         };
