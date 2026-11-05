@@ -8,6 +8,7 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import me.marcronte.colisaocobblemon.commands.*;
 import me.marcronte.colisaocobblemon.features.RideRequirement;
 import me.marcronte.colisaocobblemon.features.blocks.LureRarityManager;
+import me.marcronte.colisaocobblemon.features.breeding.PendingPokemonReturns;
 import me.marcronte.colisaocobblemon.features.breeding.habitat.BreedingEntityCleaner;
 import me.marcronte.colisaocobblemon.placeholders.ModPlaceholders;
 import me.marcronte.colisaocobblemon.config.ColisaoSettingsManager;
@@ -75,6 +76,7 @@ public class ColisaoCobblemon implements ModInitializer {
         HmManager.register();
         ModScreenHandlers.register();
         BreedingEntityCleaner.register();
+        PendingPokemonReturns.register();
         RideRequirement.register();
 
         // PokeLoot

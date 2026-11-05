@@ -95,6 +95,12 @@ public class BreedingCalculator {
 
         Pokemon offspring = PokemonProperties.Companion.parse(dna.toString()).create();
 
+        // Formas com nome composto (ex: "White-Striped" do Basculin) podem nao ser resolvidas
+        // pelo "form=" do PokemonProperties. Aplica a forma explicitamente no servidor.
+        if (inheritedForm != null) {
+            applyForm(offspring, inheritedForm.getName());
+        }
+
         if (regionalAspect != null) {
             if (!offspring.getAspects().contains(regionalAspect)) {
                 offspring.getAspects().add(regionalAspect);
@@ -464,6 +470,39 @@ public class BreedingCalculator {
         if (dex <= 809) return 7;
         if (dex <= 905) return 8;
         return 9;
+    }
+
+    private static String normalizeFormId(String name) {
+        return name == null ? "" : name.toLowerCase().replaceAll("[^a-z0-9]", "");
+    }
+
+    /**
+     * Procura uma forma da especie pelo nome, ignorando maiusculas e simbolos
+     * ("White-Striped", "white_striped" e "whitestriped" sao tratados como iguais).
+     */
+    public static FormData findForm(Species species, String formName) {
+        if (species == null || formName == null || formName.isEmpty()) return null;
+
+        String wanted = normalizeFormId(formName);
+        for (FormData candidate : species.getForms()) {
+            if (normalizeFormId(candidate.getName()).equals(wanted)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Garante que o Pokemon esta na forma pedida. Nao faz nada se o nome for vazio/"normal",
+     * se a especie nao tiver essa forma ou se o Pokemon ja estiver nela.
+     */
+    public static void applyForm(Pokemon pokemon, String formName) {
+        if (pokemon == null || formName == null || formName.isEmpty() || formName.equalsIgnoreCase("normal")) return;
+
+        FormData target = findForm(pokemon.getSpecies(), formName);
+        if (target != null && !target.getName().equalsIgnoreCase(pokemon.getForm().getName())) {
+            pokemon.setForm(target);
+        }
     }
 
     private static boolean isRegionalForm(String formName) {

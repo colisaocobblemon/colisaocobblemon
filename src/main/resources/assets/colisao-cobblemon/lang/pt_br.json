@@ -151,6 +151,7 @@
   "message.colisao-cobblemon.empty_slot": "Slot vazio!",
   "message.colisao-cobblemon.pokemon_came_back": "%s voltou para sua party.",
   "message.colisao-cobblemon.pokemon_sent_pc": "%s foi enviado para o seu PC.",
+  "message.colisao-cobblemon.habitat_pokemon_returned": "Seus Pokémon de um habitat de breeding quebrado foram devolvidos.",
   "gui.colisao-cobblemon.breeding_breed": "Breedar",
   "gui.colisao-cobblemon.breeding_father": "PAI",
   "gui.colisao-cobblemon.breeding_mother": "MÃE",

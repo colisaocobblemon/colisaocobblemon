@@ -148,6 +148,7 @@
   "message.colisao-cobblemon.empty_slot": "Empty Slot!",
   "message.colisao-cobblemon.pokemon_came_back": "%s came back to your party.",
   "message.colisao-cobblemon.pokemon_sent_pc": "%s was sent to your PC.",
+  "message.colisao-cobblemon.habitat_pokemon_returned": "Your Pokémon from a broken breeding habitat have been returned.",
   "gui.colisao-cobblemon.breeding_breed": "Breed",
   "gui.colisao-cobblemon.breeding_father": "FATHER",
   "gui.colisao-cobblemon.breeding_mother": "MOTHER",

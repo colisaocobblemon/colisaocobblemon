@@ -185,10 +185,10 @@ public class BreedingNetwork {
     public static void givePokemonOrToPC(ServerPlayer player, Pokemon pokemon) {
         PlayerPartyStore party = Cobblemon.INSTANCE.getStorage().getParty(player);
         if (party.add(pokemon)) {
-            player.sendSystemMessage(Component.translatable(pokemon.getSpecies().getName(), "message.colisao-cobblemon.pokemon_came_back").withStyle(ChatFormatting.GREEN));
+            player.sendSystemMessage(Component.translatable("message.colisao-cobblemon.pokemon_came_back", pokemon.getSpecies().getName()).withStyle(ChatFormatting.GREEN));
         } else {
             Cobblemon.INSTANCE.getStorage().getPC(player).add(pokemon);
-            player.sendSystemMessage(Component.translatable(pokemon.getSpecies().getName(), "message.colisao-cobblemon.pokemon_sent_pc").withStyle(ChatFormatting.YELLOW));
+            player.sendSystemMessage(Component.translatable("message.colisao-cobblemon.pokemon_sent_pc", pokemon.getSpecies().getName()).withStyle(ChatFormatting.YELLOW));
         }
     }
 

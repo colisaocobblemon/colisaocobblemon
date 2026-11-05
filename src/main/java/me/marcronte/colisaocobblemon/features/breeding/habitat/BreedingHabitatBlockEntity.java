@@ -4,6 +4,7 @@ import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import me.marcronte.colisaocobblemon.ModBlocks;
 import me.marcronte.colisaocobblemon.features.breeding.BreedingCalculator;
+import me.marcronte.colisaocobblemon.features.breeding.PendingPokemonReturns;
 import me.marcronte.colisaocobblemon.network.BreedingNetwork;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
@@ -245,31 +246,9 @@ public class BreedingHabitatBlockEntity extends BlockEntity implements WorldlyCo
         if (level == null || level.isClientSide || owner == null) return;
 
         ServerPlayer player = level.getServer().getPlayerList().getPlayer(owner);
-        net.minecraft.core.BlockPos pos = this.getBlockPos();
 
-        if (motherData != null) {
-            Pokemon m = BreedingNetwork.reconstructPokemon(motherData, level.registryAccess());
-            if (m != null) {
-                if (player != null) {
-                    BreedingNetwork.givePokemonOrToPC(player, m);
-                } else {
-                    net.minecraft.world.item.ItemStack mStack = com.cobblemon.mod.common.item.PokemonItem.from(m, 1);
-                    net.minecraft.world.Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), mStack);
-                }
-            }
-        }
-
-        if (fatherData != null) {
-            Pokemon f = BreedingNetwork.reconstructPokemon(fatherData, level.registryAccess());
-            if (f != null) {
-                if (player != null) {
-                    BreedingNetwork.givePokemonOrToPC(player, f);
-                } else {
-                    net.minecraft.world.item.ItemStack fStack = com.cobblemon.mod.common.item.PokemonItem.from(f, 1);
-                    net.minecraft.world.Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), fStack);
-                }
-            }
-        }
+        returnParentToOwner(player, motherData);
+        returnParentToOwner(player, fatherData);
 
         despawnEntities((ServerLevel) level);
 
@@ -278,6 +257,25 @@ public class BreedingHabitatBlockEntity extends BlockEntity implements WorldlyCo
         this.progressTicks = 0;
         this.currentFuelTicks = 0;
         this.setChanged();
+    }
+
+    /**
+     * Dono online: o Pokemon vai direto para a party (ou PC se estiver cheia).
+     * Dono offline (ou se algo falhar ao reconstruir): os dados completos ficam guardados e
+     * o Pokemon e entregue quando o dono entrar no servidor. Nunca dropa item no chao.
+     */
+    private void returnParentToOwner(ServerPlayer player, CompoundTag data) {
+        if (data == null) return;
+
+        if (player != null) {
+            Pokemon pokemon = BreedingNetwork.reconstructPokemon(data, level.registryAccess());
+            if (pokemon != null) {
+                BreedingNetwork.givePokemonOrToPC(player, pokemon);
+                return;
+            }
+        }
+
+        PendingPokemonReturns.get(level.getServer()).add(owner, data);
     }
 
     private void maintainEntities(ServerLevel level, BlockPos pos) {

@@ -124,19 +124,6 @@ public class BreedingHabitatBlock extends Block implements EntityBlock {
         }
     }
 
-    @Override
-    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
-        BlockEntity be = level.getBlockEntity(pos);
-
-        if (be instanceof BreedingHabitatBlockEntity habitat) {
-            if (habitat.hasActiveBreeding()) {
-                return 0.0F;
-            }
-        }
-
-        return super.getDestroyProgress(state, player, level, pos);
-    }
-
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
