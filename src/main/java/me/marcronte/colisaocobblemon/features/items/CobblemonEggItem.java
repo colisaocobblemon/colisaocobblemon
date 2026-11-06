@@ -116,8 +116,12 @@ public class CobblemonEggItem extends Item {
 
             pokemon = PokemonProperties.Companion.parse(dna.toString()).create();
 
-            // Garante formas com nome composto (ex: "White-Striped" do Basculin), que o "form=" pode nao resolver.
-            BreedingCalculator.applyForm(pokemon, formStr);
+            // Formas como "White-Striped" do Basculin dependem de uma feature (fish_stripes=white);
+            // o "form=white-striped" acima e ignorado pelo Cobblemon. Ovos antigos/sem forma nao sao afetados.
+            String featureProps = BreedingCalculator.formFeatureProperties(pokemon.getSpecies(), formStr).trim();
+            if (!featureProps.isEmpty()) {
+                PokemonProperties.Companion.parse(featureProps).apply(pokemon);
+            }
 
             if (!formStr.isEmpty() && !formStr.equalsIgnoreCase("normal")) {
                 String cleanForm = formStr.toLowerCase();
