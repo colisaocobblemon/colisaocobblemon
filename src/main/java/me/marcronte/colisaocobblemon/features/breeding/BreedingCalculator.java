@@ -10,6 +10,10 @@ import com.cobblemon.mod.common.api.moves.MoveTemplate;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.api.pokemon.egg.EggGroup;
+import com.cobblemon.mod.common.api.pokemon.feature.ChoiceSpeciesFeatureProvider;
+import com.cobblemon.mod.common.api.pokemon.feature.SpeciesFeatureProvider;
+import com.cobblemon.mod.common.api.pokemon.feature.SpeciesFeatures;
+import com.cobblemon.mod.common.api.pokemon.feature.StringSpeciesFeature;
 import com.cobblemon.mod.common.api.pokemon.evolution.Evolution;
 import com.cobblemon.mod.common.api.pokemon.stats.Stats;
 import com.cobblemon.mod.common.pokemon.*;
@@ -86,6 +90,7 @@ public class BreedingCalculator {
             dna.append(" ").append(regionalAspect);
         } else if (inheritedForm != null && !inheritedForm.getName().equalsIgnoreCase("normal")) {
             dna.append(" form=").append(inheritedForm.getName().toLowerCase());
+            dna.append(formFeatureProperties(childSpecies, inheritedForm.getName()));
         }
 
         dna.append(" level=1");
@@ -94,12 +99,6 @@ public class BreedingCalculator {
         }
 
         Pokemon offspring = PokemonProperties.Companion.parse(dna.toString()).create();
-
-        // Formas com nome composto (ex: "White-Striped" do Basculin) podem nao ser resolvidas
-        // pelo "form=" do PokemonProperties. Aplica a forma explicitamente no servidor.
-        if (inheritedForm != null) {
-            applyForm(offspring, inheritedForm.getName());
-        }
 
         if (regionalAspect != null) {
             if (!offspring.getAspects().contains(regionalAspect)) {
@@ -493,16 +492,34 @@ public class BreedingCalculator {
     }
 
     /**
-     * Garante que o Pokemon esta na forma pedida. Nao faz nada se o nome for vazio/"normal",
-     * se a especie nao tiver essa forma ou se o Pokemon ja estiver nela.
+     * No Cobblemon a forma e recalculada a partir dos aspectos (Species.getForm), e formas como as do
+     * Basculin (Blue/White-Striped) so existem quando uma "feature" de escolha esta ativa
+     * (fish_stripes=blue/white). O "form=white-striped" do PokemonProperties e ignorado (compara com
+     * "whitestriped") e a feature nao e copiada dos pais, entao o filhote nascia Red-Striped.
+     *
+     * Devolve as propriedades das features que produzem os aspectos da forma, ja com espaco na frente
+     * (ex: " fish_stripes=white"), ou "" se a forma for regional, nao existir na especie ou nao
+     * depender de feature de escolha.
      */
-    public static void applyForm(Pokemon pokemon, String formName) {
-        if (pokemon == null || formName == null || formName.isEmpty() || formName.equalsIgnoreCase("normal")) return;
+    public static String formFeatureProperties(Species species, String formName) {
+        if (species == null || formName == null || formName.isEmpty() || formName.equalsIgnoreCase("normal")) return "";
+        if (isRegionalForm(formName)) return "";
 
-        FormData target = findForm(pokemon.getSpecies(), formName);
-        if (target != null && !target.getName().equalsIgnoreCase(pokemon.getForm().getName())) {
-            pokemon.setForm(target);
+        FormData form = findForm(species, formName);
+        if (form == null) return "";
+
+        StringBuilder props = new StringBuilder();
+        for (SpeciesFeatureProvider<?> provider : SpeciesFeatures.getFeaturesFor(species)) {
+            if (!(provider instanceof ChoiceSpeciesFeatureProvider choice) || !choice.isAspect()) continue;
+
+            for (String option : choice.getChoices()) {
+                StringSpeciesFeature feature = choice.fromString(option);
+                if (feature != null && form.getAspects().contains(choice.getAspect(feature))) {
+                    props.append(' ').append(feature.asString());
+                }
+            }
         }
+        return props.toString();
     }
 
     private static boolean isRegionalForm(String formName) {
