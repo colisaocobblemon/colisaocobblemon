@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "colisao-cobblemon:eternatite_helmet",
+    "colisao-cobblemon:eternatite_chestplate",
+    "colisao-cobblemon:eternatite_leggings",
+    "colisao-cobblemon:eternatite_boots"
+  ]
+}

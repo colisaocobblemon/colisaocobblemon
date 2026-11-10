@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "colisao-cobblemon:eternatite_helmet",
+    "colisao-cobblemon:eternatite_chestplate",
+    "colisao-cobblemon:eternatite_leggings",
+    "colisao-cobblemon:eternatite_boots",
+    "colisao-cobblemon:eternatite_sword",
+    "colisao-cobblemon:eternatite_pickaxe",
+    "colisao-cobblemon:eternatite_axe",
+    "colisao-cobblemon:eternatite_shovel",
+    "colisao-cobblemon:eternatite_hoe"
+  ]
+}
