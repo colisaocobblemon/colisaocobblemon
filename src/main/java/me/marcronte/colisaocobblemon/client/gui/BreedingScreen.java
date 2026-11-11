@@ -15,6 +15,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -33,6 +34,9 @@ public class BreedingScreen extends Screen {
     private String motherSpeciesStr;
     private String fatherSpeciesStr;
 
+    private final CompoundTag motherData;
+    private final CompoundTag fatherData;
+
     private long startTime;
     private long totalDuration;
     private boolean isActive;
@@ -43,12 +47,14 @@ public class BreedingScreen extends Screen {
 
     private int selectingSlot = -1;
 
-    public BreedingScreen(UUID mother, UUID father, String mSpecies, String fSpecies, long start, long duration, boolean active, boolean ready) {
+    public BreedingScreen(UUID mother, UUID father, String mSpecies, String fSpecies, CompoundTag mData, CompoundTag fData, long start, long duration, boolean active, boolean ready) {
         super(Component.literal("Breeding"));
         this.motherId = mother;
         this.fatherId = father;
         this.motherSpeciesStr = mSpecies;
         this.fatherSpeciesStr = fSpecies;
+        this.motherData = mData;
+        this.fatherData = fData;
         this.startTime = start;
         this.totalDuration = duration;
         this.isActive = active;
@@ -123,36 +129,23 @@ public class BreedingScreen extends Screen {
     }
 
     private Pokemon resolvePokemonToRender(UUID uuid, String speciesStr, boolean isMother) {
+        // Com o breeding ativo os pais já saíram do party, então são reconstruídos
+        // a partir dos dados enviados pelo servidor (e não buscados no party).
         if (isActive) {
             if (isMother) {
-                if (cachedMotherDummy == null && speciesStr != null) {
-                    cachedMotherDummy = createSafeClientDummy(speciesStr);
+                if (cachedMotherDummy == null) {
+                    cachedMotherDummy = BreedingDisplay.fromData(motherData, speciesStr);
                 }
                 return cachedMotherDummy;
             } else {
-                if (cachedFatherDummy == null && speciesStr != null) {
-                    cachedFatherDummy = createSafeClientDummy(speciesStr);
+                if (cachedFatherDummy == null) {
+                    cachedFatherDummy = BreedingDisplay.fromData(fatherData, speciesStr);
                 }
                 return cachedFatherDummy;
             }
         }
 
         return getClientSidePokemon(uuid);
-    }
-
-    private Pokemon createSafeClientDummy(String speciesStr) {
-        Pokemon dummy = new Pokemon();
-        try {
-            String cleanName = speciesStr.toLowerCase().replace("cobblemon:", "").trim();
-
-            com.cobblemon.mod.common.pokemon.Species species = PokemonSpecies.getByName(cleanName);
-
-            if (species != null) {
-                dummy.setSpecies(species);
-            }
-        } catch (Exception ignored) {
-        }
-        return dummy;
     }
 
     private void renderPartyList(GuiGraphics graphics, int mouseX, int mouseY, int startX, int startY) {
@@ -202,7 +195,9 @@ public class BreedingScreen extends Screen {
             graphics.pose().scale(scale, scale, 1.0f);
             graphics.renderItem(stack, 0, 0);
             graphics.pose().popPose();
-        } catch (Exception ignored) { }
+        } catch (Exception e) {
+            BreedingDisplay.logRenderFailure(e);
+        }
     }
 
     private void renderTimer(GuiGraphics graphics, int x, int y) {

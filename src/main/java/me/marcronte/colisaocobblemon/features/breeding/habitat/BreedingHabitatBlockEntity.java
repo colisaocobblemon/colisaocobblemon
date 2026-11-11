@@ -235,6 +235,7 @@ public class BreedingHabitatBlockEntity extends BlockEntity implements WorldlyCo
                 this.spawnedMotherId = null;
                 this.spawnedFatherId = null;
                 this.setChanged();
+                syncToClients();
 
                 level.setBlock(getBlockPos(), getBlockState().setValue(BreedingHabitatBlock.READY, false), 3);
             }
@@ -278,6 +279,7 @@ public class BreedingHabitatBlockEntity extends BlockEntity implements WorldlyCo
         this.progressTicks = 0;
         this.currentFuelTicks = 0;
         this.setChanged();
+        syncToClients();
     }
 
     private void maintainEntities(ServerLevel level, BlockPos pos) {
@@ -367,6 +369,18 @@ public class BreedingHabitatBlockEntity extends BlockEntity implements WorldlyCo
         this.progressTicks = 0;
         this.currentFuelTicks = 0;
         this.setChanged();
+        syncToClients();
+    }
+
+    /**
+     * Reenvia o block entity aos clientes próximos. A HabitatScreen lê os dados dos pais daqui,
+     * já que durante o breeding eles não estão mais no party do jogador.
+     */
+    private void syncToClients() {
+        if (this.level != null && !this.level.isClientSide) {
+            BlockState state = this.getBlockState();
+            this.level.sendBlockUpdated(this.getBlockPos(), state, state, 3);
+        }
     }
 
     private String getSecondaryType(CompoundTag data) {
@@ -515,6 +529,14 @@ public class BreedingHabitatBlockEntity extends BlockEntity implements WorldlyCo
 
     public UUID getOwner() {
         return this.owner;
+    }
+
+    public CompoundTag getMotherData() {
+        return this.motherData;
+    }
+
+    public CompoundTag getFatherData() {
+        return this.fatherData;
     }
 
     public boolean hasActiveBreeding() {

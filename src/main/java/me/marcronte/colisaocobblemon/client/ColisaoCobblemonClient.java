@@ -158,6 +158,8 @@ public class ColisaoCobblemonClient implements ClientModInitializer {
                 payload.father(),
                 payload.motherSpecies(),
                 payload.fatherSpecies(),
+                payload.motherData(),
+                payload.fatherData(),
                 payload.startTime(),
                 payload.totalDuration(),
                 payload.active(),

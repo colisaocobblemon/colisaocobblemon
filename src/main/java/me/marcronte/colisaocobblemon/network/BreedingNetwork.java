@@ -63,11 +63,15 @@ public class BreedingNetwork {
             if (f != null) fSpecies = f.getSpecies().resourceIdentifier.toString();
         }
 
+        // Durante o breeding os pais não estão mais no party do jogador, então o cliente
+        // precisa receber os dados deles para conseguir desenhá-los na tela.
         ServerPlayNetworking.send(player, new BreedingSyncPayload(
                 info.motherId,
                 info.fatherId,
                 mSpecies,
                 fSpecies,
+                info.isActive ? info.motherData : null,
+                info.isActive ? info.fatherData : null,
                 info.startTime,
                 BreedingData.PlayerBreedingInfo.BREEDING_DURATION,
                 info.isActive,
@@ -175,7 +179,7 @@ public class BreedingNetwork {
                     data.setDirty();
 
                     ServerPlayNetworking.send(player, new BreedingSyncPayload(
-                            null, null, null, null, 0, BreedingData.PlayerBreedingInfo.BREEDING_DURATION, false, false
+                            null, null, null, null, null, null, 0, BreedingData.PlayerBreedingInfo.BREEDING_DURATION, false, false
                     ));
                 }
             }

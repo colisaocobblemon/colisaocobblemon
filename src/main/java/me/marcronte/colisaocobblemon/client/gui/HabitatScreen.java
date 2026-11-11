@@ -6,6 +6,7 @@ import com.cobblemon.mod.common.item.PokemonItem;
 import com.cobblemon.mod.common.pokemon.Gender;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.marcronte.colisaocobblemon.features.breeding.habitat.BreedingHabitatBlockEntity;
 import me.marcronte.colisaocobblemon.features.breeding.habitat.HabitatMenu;
 import me.marcronte.colisaocobblemon.network.payloads.HabitatPayloads;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,6 +35,10 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
     private UUID motherId;
     private UUID fatherId;
     private int selectingSlot = -1;
+
+    // Pais exibidos enquanto o breeding está ativo (já não estão mais no party do jogador).
+    private Pokemon activeMother;
+    private Pokemon activeFather;
 
     private int selectingBerryForSlot = -1;
     private int berryPage = 0;
@@ -209,16 +215,41 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
         ResourceLocation bg = isReady ? BG_READY : BG_NOT_READY;
         graphics.blit(bg, this.leftPos, this.topPos, 0, 0, 256, 256, 256, 256);
 
-        if (motherId != null) {
-            Pokemon mother = getClientSidePokemon(motherId);
+        Pokemon mother = resolveDisplayedPokemon(true);
+        if (mother != null) {
             renderPokemonSprite(graphics, mother, this.leftPos + 30, this.topPos + 70, 3.0f);
-            if (mother != null) graphics.drawCenteredString(font, mother.getSpecies().getName(), this.leftPos + 51, this.topPos + 115, 0xFFFFFF);
+            graphics.drawCenteredString(font, mother.getSpecies().getName(), this.leftPos + 51, this.topPos + 115, 0xFFFFFF);
         }
-        if (fatherId != null) {
-            Pokemon father = getClientSidePokemon(fatherId);
+
+        Pokemon father = resolveDisplayedPokemon(false);
+        if (father != null) {
             renderPokemonSprite(graphics, father, this.leftPos + 182, this.topPos + 70, 3.0f);
-            if (father != null) graphics.drawCenteredString(font, father.getSpecies().getName(), this.leftPos + 203, this.topPos + 115, 0xFFFFFF);
+            graphics.drawCenteredString(font, father.getSpecies().getName(), this.leftPos + 203, this.topPos + 115, 0xFFFFFF);
         }
+    }
+
+    /**
+     * Com o breeding ativo, os pais já saíram do party: eles são lidos do block entity do Habitat
+     * (que o servidor sincroniza com o cliente). Antes de iniciar, usa os Pokémon escolhidos no party.
+     */
+    private Pokemon resolveDisplayedPokemon(boolean isMother) {
+        if (!this.menu.isActive()) {
+            return getClientSidePokemon(isMother ? motherId : fatherId);
+        }
+
+        Pokemon cached = isMother ? activeMother : activeFather;
+        if (cached != null) return cached;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || this.menu.blockPos == null) return null;
+        if (!(mc.level.getBlockEntity(this.menu.blockPos) instanceof BreedingHabitatBlockEntity habitat)) return null;
+
+        CompoundTag data = isMother ? habitat.getMotherData() : habitat.getFatherData();
+        if (data == null || data.isEmpty()) return null;
+
+        Pokemon built = BreedingDisplay.fromData(data, data.getString("UI_Species"));
+        if (isMother) activeMother = built; else activeFather = built;
+        return built;
     }
 
     private void renderTimer(GuiGraphics graphics, int x, int y) {
@@ -291,7 +322,9 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
             graphics.pose().scale(scale, scale, 1.0f);
             graphics.renderItem(stack, 0, 0);
             graphics.pose().popPose();
-        } catch (Exception ignored) { }
+        } catch (Exception e) {
+            BreedingDisplay.logRenderFailure(e);
+        }
     }
 
     @Override

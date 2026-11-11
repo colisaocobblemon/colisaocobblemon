@@ -1,6 +1,7 @@
 package me.marcronte.colisaocobblemon.network.payloads;
 
 import me.marcronte.colisaocobblemon.network.BreedingNetwork;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -14,6 +15,8 @@ public record BreedingSyncPayload(
         @Nullable UUID father,
         @Nullable String motherSpecies,
         @Nullable String fatherSpecies,
+        @Nullable CompoundTag motherData,
+        @Nullable CompoundTag fatherData,
         long startTime,
         long totalDuration,
         boolean active,
@@ -36,6 +39,12 @@ public record BreedingSyncPayload(
                 buf.writeBoolean(value.fatherSpecies != null);
                 if (value.fatherSpecies != null) buf.writeUtf(value.fatherSpecies);
 
+                buf.writeBoolean(value.motherData != null);
+                if (value.motherData != null) buf.writeNbt(value.motherData);
+
+                buf.writeBoolean(value.fatherData != null);
+                if (value.fatherData != null) buf.writeNbt(value.fatherData);
+
                 buf.writeLong(value.startTime);
                 buf.writeLong(value.totalDuration);
                 buf.writeBoolean(value.active);
@@ -54,12 +63,18 @@ public record BreedingSyncPayload(
                 boolean hasFatherSpecies = buf.readBoolean();
                 String fatherSpecies = hasFatherSpecies ? buf.readUtf() : null;
 
+                boolean hasMotherData = buf.readBoolean();
+                CompoundTag motherData = hasMotherData ? buf.readNbt() : null;
+
+                boolean hasFatherData = buf.readBoolean();
+                CompoundTag fatherData = hasFatherData ? buf.readNbt() : null;
+
                 long startTime = buf.readLong();
                 long totalDuration = buf.readLong();
                 boolean active = buf.readBoolean();
                 boolean ready = buf.readBoolean();
 
-                return new BreedingSyncPayload(mother, father, motherSpecies, fatherSpecies, startTime, totalDuration, active, ready);
+                return new BreedingSyncPayload(mother, father, motherSpecies, fatherSpecies, motherData, fatherData, startTime, totalDuration, active, ready);
             }
     );
 
