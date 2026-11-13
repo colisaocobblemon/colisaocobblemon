@@ -1,8 +1,6 @@
 package me.marcronte.colisaocobblemon.client.gui;
 
-import com.cobblemon.mod.common.api.pokemon.PokemonProperties; //Novo
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
-import com.cobblemon.mod.common.pokemon.Gender; //Novo
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import me.marcronte.colisaocobblemon.ColisaoCobblemon;
@@ -87,21 +85,15 @@ public final class BreedingDisplay {
             if (aspect == null && data != null) aspect = findRegionalAspect(data);
             if (aspect == null) return pokemon;
 
-            // Não usar PokemonProperties.create(): ele chama initialize(), que monta o moveset com o
-            // builder "cobblemon:wild", registrado só no servidor. Cria um Pokémon vazio e usa apply().
-            Pokemon rebuilt = new Pokemon();
-            rebuilt.setSpecies(pokemon.getSpecies());
-
-            // Forma regional é um aspecto solto na string ("golem alolan"), não "form=alolan".
-            StringBuilder props = new StringBuilder(pokemon.getSpecies().resourceIdentifier.getPath());
-            props.append(" ").append(aspect);
-            props.append(pokemon.getShiny() ? " shiny=yes" : " shiny=no");
-            if (pokemon.getGender() == Gender.MALE || pokemon.getGender() == Gender.FEMALE) {
-                props.append(" gender=").append(pokemon.getGender().name().toLowerCase());
+            //Alteração
+            // O sprite é desenhado por PokemonItem.from(pokemon) a partir de species + pokemon.getAspects().
+            // Recriar via PokemonProperties.apply() não atualizava os aspectos exibidos; então usa o mesmo
+            // padrão já usado no resto do mod (BreedingCalculator, CobblemonEggItem): adicionar o aspecto
+            // diretamente ao conjunto de aspectos do Pokémon.
+            if (!pokemon.getAspects().contains(aspect)) {
+                pokemon.getAspects().add(aspect);
             }
-
-            PokemonProperties.Companion.parse(props.toString()).apply(rebuilt);
-            return rebuilt;
+            return pokemon;
         } catch (Exception e) {
             ColisaoCobblemon.LOGGER.warn("[Breeding] Não foi possível aplicar a forma ao Pokémon exibido, mantendo a forma atual.", e);
             return pokemon;
