@@ -416,6 +416,7 @@ public class BreedingHabitatBlockEntity extends BlockEntity implements WorldlyCo
     }
 
     public void openMenu(ServerPlayer player) {
+        BreedingNetwork.sendCastratedParty(player);
         player.openMenu(this);
     }
 

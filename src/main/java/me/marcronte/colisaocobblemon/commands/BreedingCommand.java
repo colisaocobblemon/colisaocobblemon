@@ -44,46 +44,17 @@ public class BreedingCommand {
         return 1;
     }
 
-    private static void giveBack(ServerPlayer player, Pokemon p) {
-        if (Cobblemon.INSTANCE.getStorage().getParty(player).add(p)) {
-            player.sendSystemMessage(Component.translatable(p.getSpecies().getName(), "message.colisao-cobblemon.pokemon_came_back").withStyle(ChatFormatting.GREEN));
-        } else {
-            Cobblemon.INSTANCE.getStorage().getPC(player).add(p);
-            player.sendSystemMessage(Component.translatable(p.getSpecies().getName(), "message.colisao-cobblemon.pokemon_sent_pc").withStyle(ChatFormatting.YELLOW));
-        }
-    }
-
     private static int cancelBreeding(CommandContext<CommandSourceStack> ctx) {
         ServerPlayer player = ctx.getSource().getPlayer();
         if (player == null) return 0;
 
-        BreedingData data = BreedingData.get(player.serverLevel());
-        BreedingData.PlayerBreedingInfo info = data.getPlayerInfo(player.getUUID());
+        boolean wasActive = BreedingNetwork.cancelBreeding(player);
 
-        if (info.isActive) {
-            if (info.motherData != null) {
-                Pokemon mother = BreedingNetwork.reconstructPokemon(info.motherData, player.registryAccess());
-                if (mother != null) giveBack(player, mother);
-            }
-            if (info.fatherData != null) {
-                Pokemon father = BreedingNetwork.reconstructPokemon(info.fatherData, player.registryAccess());
-                if (father != null) giveBack(player, father);
-            }
-
+        if (wasActive) {
             ctx.getSource().sendSuccess(() -> Component.translatable("message.colisao-cobblemon.breeding_canceled").withStyle(ChatFormatting.GREEN), false);
         } else {
             ctx.getSource().sendSuccess(() -> Component.translatable("message.colisao-cobblemon.breeding_canceled_error").withStyle(ChatFormatting.YELLOW), false);
         }
-
-        info.isActive = false;
-        info.startTime = 0;
-        info.motherId = null;
-        info.fatherId = null;
-        info.motherData = null;
-        info.fatherData = null;
-        data.setDirty();
-
-        BreedingNetwork.openBreedingScreen(player);
 
         return 1;
     }

@@ -131,6 +131,11 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
             graphics.drawCenteredString(font, Component.translatable("gui.colisao-cobblemon.breeding_breed"), x + 128, y + 193, 0xFFFFFF);
         }
 
+        // Breed em andamento: o botão (que antes era "Breed") vira "Cancelar".
+        if (this.menu.isActive() && !isHabitatReady()) {
+            graphics.drawCenteredString(font, Component.translatable("message.colisao-cobblemon.cancel"), x + 128, y + 193, 0xFF6666);
+        }
+
         graphics.drawCenteredString(font, Component.translatable("gui.colisao-cobblemon.claim"), x + 127, y + 153, 0xFFFFFF);
 
         int fuel = this.menu.getFuel();
@@ -219,12 +224,14 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
         if (mother != null) {
             renderPokemonSprite(graphics, mother, this.leftPos + 30, this.topPos + 70, 3.0f);
             graphics.drawCenteredString(font, mother.getSpecies().getName(), this.leftPos + 51, this.topPos + 115, 0xFFFFFF);
+            if (BreedingDisplay.isCastrated(mother)) BreedingDisplay.drawCastratedTag(graphics, font, this.leftPos + 51, this.topPos + 126);
         }
 
         Pokemon father = resolveDisplayedPokemon(false);
         if (father != null) {
             renderPokemonSprite(graphics, father, this.leftPos + 182, this.topPos + 70, 3.0f);
             graphics.drawCenteredString(font, father.getSpecies().getName(), this.leftPos + 203, this.topPos + 115, 0xFFFFFF);
+            if (BreedingDisplay.isCastrated(father)) BreedingDisplay.drawCastratedTag(graphics, font, this.leftPos + 203, this.topPos + 126);
         }
     }
 
@@ -250,6 +257,10 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
         Pokemon built = BreedingDisplay.fromData(data, data.getString("UI_Species"));
         if (isMother) activeMother = built; else activeFather = built;
         return built;
+    }
+
+    private boolean isHabitatReady() {
+        return this.menu.isActive() && this.menu.getProgress() >= this.menu.getRequired() && this.menu.getRequired() > 0;
     }
 
     private void renderTimer(GuiGraphics graphics, int x, int y) {
@@ -292,9 +303,11 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
             if (p == null) { i++; continue; }
             int slotY = startY + (i * 35);
             boolean isHovered = mouseX >= startX && mouseX <= startX + 60 && mouseY >= slotY && mouseY <= slotY + 32;
-            int color = isHovered ? 0xC0FFFFFF : 0xC0000000;
+            boolean castrated = BreedingDisplay.isCastrated(p);
+            int color = BreedingDisplay.partyEntryColor(castrated, isHovered);
             graphics.fill(startX, slotY, startX + 60, slotY + 32, color);
             renderPokemonSprite(graphics, p, startX + 2, slotY + 2, 1.5f);
+            if (castrated) BreedingDisplay.drawCastratedTagSmall(graphics, font, startX + 22, slotY + 21);
             graphics.pose().pushPose();
             graphics.pose().translate(startX + 22, slotY + 12, 0);
             graphics.pose().scale(0.7f, 0.7f, 1f);
@@ -409,6 +422,11 @@ public class HabitatScreen extends AbstractContainerScreen<HabitatMenu> {
                 ClientPlayNetworking.send(new HabitatPayloads.HabitatActionPayload(3, new UUID(0,0), new UUID(0,0), ""));
                 return true;
             }
+        }
+
+        if (relX >= 101 && relX <= 154 && relY >= 185 && relY <= 208 && this.menu.isActive() && !isHabitatReady()) {
+            sendAction(1, null, "");
+            return true;
         }
 
         if (relX >= 101 && relX <= 154 && relY >= 185 && relY <= 208 && !this.menu.isActive()) {

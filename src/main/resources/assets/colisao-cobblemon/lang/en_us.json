@@ -149,6 +149,7 @@
   "message.colisao-cobblemon.pokemon_came_back": "%s came back to your party.",
   "message.colisao-cobblemon.pokemon_sent_pc": "%s was sent to your PC.",
   "gui.colisao-cobblemon.breeding_breed": "Breed",
+  "gui.colisao-cobblemon.castrated": "Neutered",
   "gui.colisao-cobblemon.breeding_father": "FATHER",
   "gui.colisao-cobblemon.breeding_mother": "MOTHER",
   "gui.colisao-cobblemon.habitat_points": "Habitat Points: %d",

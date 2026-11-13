@@ -153,6 +153,9 @@ public class ColisaoCobblemonClient implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(OpenRouteScreenPayload.ID, (payload, context) -> context.client().execute(() -> context.client().setScreen(new RouteConfigScreen())));
 
+        ClientPlayNetworking.registerGlobalReceiver(CastratedPartyPayload.ID, (payload, context) ->
+                context.client().execute(() -> BreedingDisplay.setCastratedParty(payload.castrated())));
+
         ClientPlayNetworking.registerGlobalReceiver(BreedingSyncPayload.ID, (payload, context) -> context.client().execute(() -> Minecraft.getInstance().setScreen(new BreedingScreen(
                 payload.mother(),
                 payload.father(),

@@ -46,6 +46,7 @@ public class BreedingNetwork {
     }
 
     public static void openBreedingScreen(ServerPlayer player) {
+        sendCastratedParty(player);
         BreedingData data = BreedingData.get(player.serverLevel());
         BreedingData.PlayerBreedingInfo info = data.getPlayerInfo(player.getUUID());
 
@@ -117,6 +118,15 @@ public class BreedingNetwork {
             player.sendSystemMessage(Component.translatable("message.colisao-cobblemon.breeding_started").withStyle(ChatFormatting.GREEN));
             openBreedingScreen(player);
         }
+        else if (buttonId == 4) {
+            // Cancelar breeding em andamento. Com o ovo já pronto o jogador deve coletá-lo,
+            // senão cancelar descartaria o ovo.
+            if (!info.isActive || info.isReady()) return;
+
+            if (cancelBreeding(player)) {
+                player.sendSystemMessage(Component.translatable("message.colisao-cobblemon.breeding_canceled").withStyle(ChatFormatting.GREEN));
+            }
+        }
         else if (buttonId == 3) {
             if (!info.isReady()) return;
 
@@ -184,6 +194,54 @@ public class BreedingNetwork {
                 }
             }
         }
+    }
+
+    /**
+     * Cancela o breeding do jogador: devolve os dois pais (party, ou PC se estiver cheio),
+     * limpa a seleção e reabre a tela. Usado pelo botão "Cancelar" e pelo /breed cancel.
+     *
+     * @return true se havia um breeding ativo (e os pais foram devolvidos)
+     */
+    public static boolean cancelBreeding(ServerPlayer player) {
+        BreedingData data = BreedingData.get(player.serverLevel());
+        BreedingData.PlayerBreedingInfo info = data.getPlayerInfo(player.getUUID());
+
+        boolean wasActive = info.isActive;
+
+        if (wasActive) {
+            if (info.motherData != null) {
+                Pokemon mother = reconstructPokemon(info.motherData, player.registryAccess());
+                if (mother != null) givePokemonOrToPC(player, mother);
+            }
+            if (info.fatherData != null) {
+                Pokemon father = reconstructPokemon(info.fatherData, player.registryAccess());
+                if (father != null) givePokemonOrToPC(player, father);
+            }
+        }
+
+        info.isActive = false;
+        info.startTime = 0;
+        info.motherId = null;
+        info.fatherId = null;
+        info.motherData = null;
+        info.fatherData = null;
+        data.setDirty();
+
+        openBreedingScreen(player);
+        return wasActive;
+    }
+
+    /** Informa ao cliente quais Pokémon do party estão castrados, para as telas de breeding marcá-los. */
+    public static void sendCastratedParty(ServerPlayer player) {
+        PlayerPartyStore party = Cobblemon.INSTANCE.getStorage().getParty(player);
+        List<UUID> castrated = new java.util.ArrayList<>();
+        for (int slot = 0; slot < 6; slot++) {
+            Pokemon pokemon = party.get(slot);
+            if (pokemon != null && pokemon.getPersistentData().getBoolean("castrado")) {
+                castrated.add(pokemon.getUuid());
+            }
+        }
+        ServerPlayNetworking.send(player, new CastratedPartyPayload(castrated));
     }
 
     public static void givePokemonOrToPC(ServerPlayer player, Pokemon pokemon) {
@@ -338,7 +396,17 @@ public class BreedingNetwork {
         }
 
         if (actionId == 1) {
+            // Só o dono cancela, e só enquanto o breeding está em andamento (com o ovo pronto
+            // o jogador deve coletá-lo, senão ele seria descartado).
+            if (!habitat.hasActiveBreeding()) return;
+            if (habitat.getBlockState().getValue(me.marcronte.colisaocobblemon.features.breeding.habitat.BreedingHabitatBlock.READY)) return;
+            if (!player.getUUID().equals(habitat.getOwner())) {
+                player.sendSystemMessage(Component.literal("§cApenas o dono pode cancelar este breeding."));
+                return;
+            }
+
             habitat.cancelBreedingAndReturnParents();
+            player.sendSystemMessage(Component.translatable("message.colisao-cobblemon.breeding_canceled").withStyle(ChatFormatting.GREEN));
             player.closeContainer();
         }
         else if (actionId == 2) {

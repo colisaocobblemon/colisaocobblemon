@@ -30,6 +30,7 @@ public class ModNetwork {
 
         // Breeding
         PayloadTypeRegistry.playS2C().register(BreedingSyncPayload.ID, BreedingSyncPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(CastratedPartyPayload.ID, CastratedPartyPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(BreedingButtonPayload.ID, BreedingButtonPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(BreedingSelectPayload.ID, BreedingSelectPayload.CODEC);
 
