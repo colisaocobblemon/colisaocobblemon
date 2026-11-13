@@ -1,6 +1,7 @@
 package me.marcronte.colisaocobblemon.client.gui;
 
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
+import com.cobblemon.mod.common.item.PokemonItem; //Novo
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import me.marcronte.colisaocobblemon.ColisaoCobblemon;
@@ -13,6 +14,7 @@ import net.minecraft.nbt.ListTag; //Novo
 import net.minecraft.nbt.StringTag; //Novo
 import net.minecraft.nbt.Tag; //Novo
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack; //Novo
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +64,16 @@ public final class BreedingDisplay {
             species = data.getString("UI_Species");
         }
         return applyDisplayForm(dummyFromSpecies(species), data); //Alteração
+    }
+
+    //Novo
+    /**
+     * Cria o ItemStack do sprite de um Pokémon já garantindo o visual da forma regional
+     * (Alola, Galar, Hisui, Paldea). Use no lugar de PokemonItem.from(pokemon, 1) nas telas.
+     */
+    public static ItemStack spriteStack(@Nullable Pokemon pokemon) {
+        if (pokemon == null) return ItemStack.EMPTY;
+        return PokemonItem.from(applyDisplayForm(pokemon, null), 1);
     }
 
     //Novo

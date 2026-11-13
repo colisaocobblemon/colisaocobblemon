@@ -2,7 +2,6 @@ package me.marcronte.colisaocobblemon.client.gui;
 
 import com.cobblemon.mod.common.client.CobblemonClient;
 import com.cobblemon.mod.common.client.storage.ClientParty;
-import com.cobblemon.mod.common.item.PokemonItem;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.marcronte.colisaocobblemon.ColisaoCobblemon;
@@ -158,7 +157,7 @@ public class PokeFurnaceScreen extends AbstractContainerScreen<PokeFurnaceMenu> 
         if (pokemon == null) return;
 
         try {
-            ItemStack stack = PokemonItem.from(pokemon, 1);
+            ItemStack stack = BreedingDisplay.spriteStack(pokemon); //Alteração
             if (stack.isEmpty()) return;
 
             graphics.pose().pushPose();
