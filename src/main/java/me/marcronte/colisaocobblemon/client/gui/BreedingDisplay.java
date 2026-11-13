@@ -1,6 +1,8 @@
 package me.marcronte.colisaocobblemon.client.gui;
 
+import com.cobblemon.mod.common.api.pokemon.PokemonProperties; //Novo
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
+import com.cobblemon.mod.common.pokemon.Gender; //Novo
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import me.marcronte.colisaocobblemon.ColisaoCobblemon;
@@ -47,7 +49,7 @@ public final class BreedingDisplay {
                     } else {
                         pokemon = Pokemon.Companion.loadFromNBT(level.registryAccess(), data);
                     }
-                    if (pokemon != null) return pokemon;
+                    if (pokemon != null) return applyDisplayForm(pokemon, data); //Alteração
                 }
             } catch (Exception e) {
                 ColisaoCobblemon.LOGGER.warn("[Breeding] Não foi possível reconstruir o Pokémon no cliente, usando fallback pela espécie.", e);
@@ -58,7 +60,53 @@ public final class BreedingDisplay {
         if ((species == null || species.isBlank()) && data != null) {
             species = data.getString("UI_Species");
         }
-        return dummyFromSpecies(species);
+        return applyDisplayForm(dummyFromSpecies(species), data); //Alteração
+    }
+
+    //Novo
+    /**
+     * Garante que formas regionais/alternativas (Alola, Galar, Hisui, Paldea...) apareçam no sprite.
+     * O sprite é desenhado a partir da espécie + aspectos do Pokémon; ao reconstruir pelo NBT (ou pelo
+     * fallback só com a espécie) o aspecto da forma pode ficar de fora e o Pokémon aparece na forma base.
+     * Se o Pokémon tem uma forma que não é a base, ele é recriado com a forma explícita.
+     */
+    @Nullable
+    private static Pokemon applyDisplayForm(@Nullable Pokemon pokemon, @Nullable CompoundTag data) {
+        if (pokemon == null) return null;
+
+        try {
+            // 1) forma do próprio Pokémon reconstruído; 2) forma gravada no NBT (FormId do Cobblemon ou Form do formato antigo)
+            String form = pokemon.getForm().getName();
+            if (isBaseForm(form) && data != null) {
+                form = null;
+                for (String key : new String[]{"FormId", "Form"}) {
+                    String value = data.getString(key);
+                    if (!isBaseForm(value)) {
+                        form = value;
+                        break;
+                    }
+                }
+            }
+            if (isBaseForm(form)) return pokemon;
+
+            StringBuilder dna = new StringBuilder(pokemon.getSpecies().resourceIdentifier.getPath());
+            dna.append(" form=").append(form.toLowerCase());
+            dna.append(pokemon.getShiny() ? " shiny=yes" : " shiny=no");
+            if (pokemon.getGender() == Gender.MALE || pokemon.getGender() == Gender.FEMALE) {
+                dna.append(" gender=").append(pokemon.getGender().name().toLowerCase());
+            }
+
+            Pokemon rebuilt = PokemonProperties.Companion.parse(dna.toString()).create();
+            return rebuilt != null ? rebuilt : pokemon;
+        } catch (Exception e) {
+            ColisaoCobblemon.LOGGER.warn("[Breeding] Não foi possível aplicar a forma ao Pokémon exibido, mantendo a forma atual.", e);
+            return pokemon;
+        }
+    }
+
+    //Novo
+    private static boolean isBaseForm(@Nullable String form) {
+        return form == null || form.isBlank() || form.equalsIgnoreCase("normal");
     }
 
     @Nullable
