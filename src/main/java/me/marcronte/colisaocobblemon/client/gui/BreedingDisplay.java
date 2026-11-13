@@ -89,15 +89,21 @@ public final class BreedingDisplay {
             }
             if (isBaseForm(form)) return pokemon;
 
-            StringBuilder dna = new StringBuilder(pokemon.getSpecies().resourceIdentifier.getPath());
-            dna.append(" form=").append(form.toLowerCase());
-            dna.append(pokemon.getShiny() ? " shiny=yes" : " shiny=no");
+            //Alteração: não usar PokemonProperties.create() aqui. Ele chama initialize(), que monta o moveset
+            // com o builder "cobblemon:wild", registrado só no servidor (no cliente dá IllegalArgumentException).
+            // Em vez disso cria um Pokémon vazio e só aplica as propriedades com apply(), que não inicializa nada.
+            Pokemon rebuilt = new Pokemon();
+            rebuilt.setSpecies(pokemon.getSpecies());
+
+            StringBuilder props = new StringBuilder("form=").append(form.toLowerCase());
+            props.append(" ").append(form.toLowerCase()); // aspecto com o nome da forma (alolan, galarian, hisuian...)
+            props.append(pokemon.getShiny() ? " shiny=yes" : " shiny=no");
             if (pokemon.getGender() == Gender.MALE || pokemon.getGender() == Gender.FEMALE) {
-                dna.append(" gender=").append(pokemon.getGender().name().toLowerCase());
+                props.append(" gender=").append(pokemon.getGender().name().toLowerCase());
             }
 
-            Pokemon rebuilt = PokemonProperties.Companion.parse(dna.toString()).create();
-            return rebuilt != null ? rebuilt : pokemon;
+            PokemonProperties.Companion.parse(props.toString()).apply(rebuilt);
+            return rebuilt;
         } catch (Exception e) {
             ColisaoCobblemon.LOGGER.warn("[Breeding] Não foi possível aplicar a forma ao Pokémon exibido, mantendo a forma atual.", e);
             return pokemon;
