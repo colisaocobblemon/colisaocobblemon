@@ -95,8 +95,9 @@ public final class BreedingDisplay {
             Pokemon rebuilt = new Pokemon();
             rebuilt.setSpecies(pokemon.getSpecies());
 
-            StringBuilder props = new StringBuilder("form=").append(form.toLowerCase());
-            props.append(" ").append(form.toLowerCase()); // aspecto com o nome da forma (alolan, galarian, hisuian...)
+            //Alteração: forma regional é um aspecto solto na string ("golem alolan"), não "form=alolan".
+            StringBuilder props = new StringBuilder(pokemon.getSpecies().resourceIdentifier.getPath());
+            props.append(" ").append(form.toLowerCase()); // alolan, galarian, hisuian, paldean...
             props.append(pokemon.getShiny() ? " shiny=yes" : " shiny=no");
             if (pokemon.getGender() == Gender.MALE || pokemon.getGender() == Gender.FEMALE) {
                 props.append(" gender=").append(pokemon.getGender().name().toLowerCase());
