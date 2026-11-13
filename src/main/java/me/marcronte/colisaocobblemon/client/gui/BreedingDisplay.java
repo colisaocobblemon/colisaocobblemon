@@ -11,6 +11,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag; //Novo
+import net.minecraft.nbt.StringTag; //Novo
+import net.minecraft.nbt.Tag; //Novo
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -64,40 +67,34 @@ public final class BreedingDisplay {
     }
 
     //Novo
+    /** Aspectos que identificam as formas regionais. */
+    private static final String[] REGIONAL_ASPECTS = {"alolan", "galarian", "hisuian", "paldean"};
+
+    //Alteração
     /**
-     * Garante que formas regionais/alternativas (Alola, Galar, Hisui, Paldea...) apareçam no sprite.
+     * Garante que formas regionais (Alola, Galar, Hisui, Paldea) apareçam no sprite.
      * O sprite é desenhado a partir da espécie + aspectos do Pokémon; ao reconstruir pelo NBT (ou pelo
-     * fallback só com a espécie) o aspecto da forma pode ficar de fora e o Pokémon aparece na forma base.
-     * Se o Pokémon tem uma forma que não é a base, ele é recriado com a forma explícita.
+     * fallback só com a espécie) o aspecto regional pode ficar de fora e o Pokémon aparece na forma base.
+     * Por isso procura no NBT (e no nome da forma) um dos aspectos regionais e, se achar, recria o
+     * Pokémon de exibição com esse aspecto.
      */
     @Nullable
     private static Pokemon applyDisplayForm(@Nullable Pokemon pokemon, @Nullable CompoundTag data) {
         if (pokemon == null) return null;
 
         try {
-            // 1) forma do próprio Pokémon reconstruído; 2) forma gravada no NBT (FormId do Cobblemon ou Form do formato antigo)
-            String form = pokemon.getForm().getName();
-            if (isBaseForm(form) && data != null) {
-                form = null;
-                for (String key : new String[]{"FormId", "Form"}) {
-                    String value = data.getString(key);
-                    if (!isBaseForm(value)) {
-                        form = value;
-                        break;
-                    }
-                }
-            }
-            if (isBaseForm(form)) return pokemon;
+            String aspect = matchRegionalAspect(pokemon.getForm().getName());
+            if (aspect == null && data != null) aspect = findRegionalAspect(data);
+            if (aspect == null) return pokemon;
 
-            //Alteração: não usar PokemonProperties.create() aqui. Ele chama initialize(), que monta o moveset
-            // com o builder "cobblemon:wild", registrado só no servidor (no cliente dá IllegalArgumentException).
-            // Em vez disso cria um Pokémon vazio e só aplica as propriedades com apply(), que não inicializa nada.
+            // Não usar PokemonProperties.create(): ele chama initialize(), que monta o moveset com o
+            // builder "cobblemon:wild", registrado só no servidor. Cria um Pokémon vazio e usa apply().
             Pokemon rebuilt = new Pokemon();
             rebuilt.setSpecies(pokemon.getSpecies());
 
-            //Alteração: forma regional é um aspecto solto na string ("golem alolan"), não "form=alolan".
+            // Forma regional é um aspecto solto na string ("golem alolan"), não "form=alolan".
             StringBuilder props = new StringBuilder(pokemon.getSpecies().resourceIdentifier.getPath());
-            props.append(" ").append(form.toLowerCase()); // alolan, galarian, hisuian, paldean...
+            props.append(" ").append(aspect);
             props.append(pokemon.getShiny() ? " shiny=yes" : " shiny=no");
             if (pokemon.getGender() == Gender.MALE || pokemon.getGender() == Gender.FEMALE) {
                 props.append(" gender=").append(pokemon.getGender().name().toLowerCase());
@@ -112,8 +109,37 @@ public final class BreedingDisplay {
     }
 
     //Novo
-    private static boolean isBaseForm(@Nullable String form) {
-        return form == null || form.isBlank() || form.equalsIgnoreCase("normal");
+    /** Devolve o aspecto regional se o texto for exatamente um deles (sem diferenciar maiúsculas). */
+    @Nullable
+    private static String matchRegionalAspect(@Nullable String value) {
+        if (value == null) return null;
+        for (String aspect : REGIONAL_ASPECTS) {
+            if (aspect.equalsIgnoreCase(value.trim())) return aspect;
+        }
+        return null;
+    }
+
+    //Novo
+    /** Percorre o NBT inteiro procurando um valor de texto que seja um aspecto regional. */
+    @Nullable
+    private static String findRegionalAspect(@Nullable Tag tag) {
+        if (tag == null) return null;
+
+        if (tag instanceof StringTag stringTag) {
+            return matchRegionalAspect(stringTag.getAsString());
+        }
+        if (tag instanceof CompoundTag compound) {
+            for (String key : compound.getAllKeys()) {
+                String found = findRegionalAspect(compound.get(key));
+                if (found != null) return found;
+            }
+        } else if (tag instanceof ListTag list) {
+            for (Tag element : list) {
+                String found = findRegionalAspect(element);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     @Nullable
